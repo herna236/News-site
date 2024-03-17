@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <div class="row">
+        <div class="col-lg-3 col-md-4 col-sm-12" id="home-aside">
+          <!-- User profile section -->
+        </div>
+      
+        <div class="col-lg-9 col-md-8 col-sm-12">
+          <h1>Top News</h1>
+          <ul class="list-group" id="top_articles">
+              {% for article in top_articles %}
+              <h2> <a href="{{ article.url }}">{{ article.title}}</a> </h2>
+              <h2>{{ article.author }}</h2>
+              <h2> {{article.publishedAt}}</h2>
+              
+              <button class="btn btn-primary favorite-button" data-article-id="{{ article.id }}">
+                <i class="fas fa-heart"></i> Favorite
+            </button>
+              <br>
+             
+              {% endfor %}
+          </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <div class="row">
+          <div class="col-lg-3 col-md-4 col-sm-12" id="home-aside">
+            <aside>
+             
+            </aside>
+          </div>
+          <div class="col-lg-9 col-md-8 col-sm-12">
+            <h1>Top News</h1>
+            <ul class="list-group" id="top_articles">
+                {% for article in top_articles %}
+                <li class="list-group-item">
+                    <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
+                    <p>Published At: {{ article.publishedAt }}</p>
+                    
+                    <form action="{{ url_for('create_article') }}" method="post">
+                      <input type="hidden" name="article_title" value="{{ article.title }}">
+                      <input type="hidden" name="article_url" value="{{ article.url }}">
+                      <button type="submit" class="btn btn-primary">Create New Article</button>
+                      
+                      <button class="favorite-button" data-article-id="{{ article.id }}">Add to Favorites</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+
+{% endblock %}
+
+

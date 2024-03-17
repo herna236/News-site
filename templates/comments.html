@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Comments for "{{ article.title }}"</h1>
+
+    <!-- Display the article -->
+    <div>
+        <h2>{{ article.author }}</h2>
+        
+    </div>
+
+    <!-- Display existing comments -->
+    <div>
+        <h2>Existing Comments</h2>
+        <ul>
+            {% for comment in comments %}
+    <div class="comment">
+        <p>{{ comment.text }}</p>
+        <p>Posted by {{ comment.user_name }} on {{ comment.created_at }}</p>
+    </div>
+{% endfor %}
+        </ul>
+    </div>
+
+    <!-- Form to add new comment -->
+    <div>
+        <h2>Add a Comment</h2>
+        <form action="{{ url_for('article_comments', article_id=article.id) }}" method="POST">
+            <textarea name="comment_text" placeholder="Enter your comment" required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+{% endblock %}
