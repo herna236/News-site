@@ -253,17 +253,21 @@ def create_article():
     article_url = request.form.get('article_url')
     article_title = request.form.get('article_title')
 
-    # Corrected line: Filter by the 'url' attribute instead of 'link'
-    article = Article.query.filter_by(url=article_url).first()  # Corrected line
+    # Log the received article title
+    print("Received article title:", article_title)
+
+    # Filter by the 'url' attribute instead of 'link'
+    article = Article.query.filter_by(url=article_url).first()  
 
     if article is None:
-        # If the article doesn't exist, create a new instance with the provided URL and title
-        article = Article(url=article_url, title=article_title)  # Updated attribute name
+       
+        article = Article(url=article_url, title=article_title)  
         db.session.add(article)
-        db.session.commit()
+        db.session.commit() 
 
     # Redirect the user to the article's page (or any other page as needed)
     return redirect(url_for('article_comments', article_id=article.id))
+
 
 
 

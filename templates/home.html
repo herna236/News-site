@@ -46,17 +46,19 @@ $(document).ready(function() {
     $('.favorite-button').on('click', function(e) {
         var button = $(this);
         var articleUrl = button.data('article-url');
+        var aticleTitle = butt.data('article-title')
 
         // AJAX request to check if the article exists and add it to favorites
         $.ajax({
             url: '/check_and_add_to_favorites',
             method: 'POST',
             data: {
-                article_url: articleUrl
+                article_url: articleUrl,
+                article_title: articeTitle
             },
             success: function(response) {
                 if (response.success) {
-                    // Update the button text and disable it
+                   
                     button.text('Favorited').prop('disabled', true);
                 } else {
                     console.error('Error adding article to favorites:', response.message);
