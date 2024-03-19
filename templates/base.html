@@ -6,57 +6,52 @@
   <title>AHNEWStest</title>
 
   <link rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.css">
-  <script src="https://unpkg.com/jquery"></script>
   <script src="https://unpkg.com/popper"></script>
   <script src="https://unpkg.com/bootstrap"></script>
-
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
   <link rel="stylesheet" href="/static/stylesheets/style.css">
   <link rel="shortcut icon" href="/static/favicon.ico">
+  <style>.navbar-nav .nav-link,
+    .navbar-nav .btn {
+      outline: none; /* Remove the outline */
+    }</style>
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
   <nav class="navbar navbar-expand">
     <div class="container-fluid">
-      <div class="navbar-header">
-        <a href="/" class="navbar-brand">
-          <img src="/static/images/download.jpeg" alt="logo">
-          <span>AHNews</span>
-        </a>
-      </div>
-      <ul class="navbar-nav mr-auto"> <!-- Use 'navbar-nav' and 'mr-auto' classes to align the content to the left -->
-        {% if request.endpoint != None %}
-        <li class="nav-item"> <!-- Add 'nav-item' class for list items in the navbar -->
-          <form class="form-inline" action="/search" method="GET"> <!-- Remove 'd-flex' class to revert to default behavior -->
-            <div class="input-group"> <!-- Wrap input and button in input-group -->
-              <input name="q" class="form-control" type="search" placeholder="Search AHNews" id="search"> <!-- Remove 'mr-sm-2' class -->
-              <div class="input-group-append"> <!-- Add 'input-group-append' to group the button -->
-                <button class="btn btn-outline-success" type="submit">Search</button> <!-- Remove 'my-2 my-sm-0' class -->
-              </div>
-            </div>
-          </form>
-        </li>
-        {% endif %}
-      </ul>
-      
-      
-      <ul class="nav navbar-nav navbar-right">
-        {% if current_user.is_authenticated %}
-            <li>
-                <a href="/logout" class="btn btn-danger">Logout</a>
-            </li>
-            <li>
-                <a href="/" class="btn btn-primary">Home</a>
-            </li>
-        {% else %}
-            <li>
-                <a href="/login" class="btn btn-primary">Sign In</a>
-            </li>
-        {% endif %}
-    </ul>
-      </ul>
+        <div class="navbar-header">
+            <a href="/" class="navbar-brand">
+                <img src="/static/images/download.jpeg" alt="logo">
+                <span>AHNews</span>
+            </a>
+        </div>
+
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <p class="nav-link">Welcome, <a href="{{ url_for('user_favorites', user_id=current_user.id) }}">{{ current_user.username }}</a>!</p>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout" class="btn btn-danger">Logout</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/" class="btn btn-primary">Home</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a href="/login" class="btn btn-primary">Sign In</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
-  </nav>
+</nav>
+
+  
 
   {% block content %}{% endblock %}
 </body>

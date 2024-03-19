@@ -1,28 +1,35 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Comments for "{{ article.title }}"</h1>
+<h1><a href="{{ article.link }}">Comments for "{{ article.title }}"</a></h1>
 
-    <!-- Display the article -->
-    <div>
-        <h2>{{ article.author }}</h2>
-        
-    </div>
 
-    <!-- Display existing comments -->
+   
     <div>
         <h2>Existing Comments</h2>
         <ul>
             {% for comment in comments %}
-    <div class="comment">
-        <p>{{ comment.text }}</p>
-        <p>Posted by {{ comment.user_name }} on {{ comment.created_at }}</p>
-    </div>
-{% endfor %}
+            <div class="comment">
+                <h3>{{ comment.text }}</h3>
+                
+                <div style="margin-left: 40px;">
+                    <h4><a href="{{ url_for('user_favorites', user_id=comment.user_id) }}">{{ comment.user_name }}</a> on {{ comment.created_at }}</h4>
+                </div>
+                
+                <button class="btn btn-danger like-btn" data-comment-id="{{ comment.id }}" {% if comment.liked_by_user %}disabled{% endif %}>
+                    {% if comment.liked_by_user %}
+                        Liked
+                    {% else %}
+                        Like
+                    {% endif %}
+                    <span class="like-count">{{ comment.likes_count }}</span>
+                </button>
+            </div>
+            {% endfor %}
         </ul>
     </div>
 
-    <!-- Form to add new comment -->
+   
     <div>
         <h2>Add a Comment</h2>
         <form action="{{ url_for('article_comments', article_id=article.id) }}" method="POST">
@@ -30,4 +37,38 @@
             <button type="submit">Submit</button>
         </form>
     </div>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+    $('.like-btn').on('click', function(e) {
+        e.preventDefault(); // Prevent the default form submission
+        
+        var $likeBtn = $(this); // Store a reference to the like button
+        
+        var commentId = $likeBtn.data('comment-id');
+        
+        $.ajax({
+            url: '/like_comment/' + commentId, // Include the comment_id in the URL
+            method: 'POST',
+            success: function(response) {
+                // You can handle the response here if needed
+                console.log('Like successful');
+                
+                // Update the like count on the button
+                var likeCountSpan = $likeBtn.find('.like-count');
+                likeCountSpan.text(response.likes_count);
+                
+                // Disable the button after liking
+                $likeBtn.prop('disabled', true);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error liking comment:', error);
+            }
+        });
+    });
+});
+    </script>
+    
 {% endblock %}

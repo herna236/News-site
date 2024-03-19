@@ -2,49 +2,34 @@
 
 {% block content %}
 <div class="container">
-  <!-- Flash messages -->
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="alert alert-dismissible fade show" role="alert">
-        <ul class="list-unstyled">
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endif %}
-  {% endwith %}
-  
-<div class="container">
   <div class="row">
     <div class="col">
       <div class="row">
         <div class="col-lg-3 col-md-4 col-sm-12" id="home-aside">
           <aside>
-           
+            <!-- You can add any sidebar content here if needed -->
           </aside>
         </div>
         <div class="col-lg-9 col-md-8 col-sm-12">
-          <h1>Top News</h1>
-          <ul class="list-group" id="top_articles">
-              {% for article in top_articles %}
+          <h1>Search Results</h1>
+          <ul class="list-group" id="search_results">
+              {% for article in search_results %}
               <li class="list-group-item">
                   <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
                   <p>Published At: {{ article.publishedAt }}</p>
                   
                   <div class="article-actions">
                     {% if article.is_favorited %}
-                    <button class="btn btn-danger favorite-button" disabled>Already Favorited</button>
+                      <button class="favorite-button" disabled>Favorited</button>
                     {% else %}
-                      <button class="btn btn-danger favorite-button" data-article-id="{{ article.url }}" data-article-title="{{ article.title }}" data-article-url="{{ article.url }}">Add to Favorites</button>
+                      <button class="favorite-button" data-article-url="{{ article.url }}" data-article-title="{{ article.title }}">Add to Favorites</button>
                     {% endif %}
                     <form action="{{ url_for('create_article') }}" method="post">
                         <input type="hidden" name="article_title" value="{{ article.title }}">
                         <input type="hidden" name="article_url" value="{{ article.url }}">
                         <button type="submit" class="btn btn-primary">Comments</button>
                     </form>
-                </div>
+                  </div>
                 
               </li>
               {% endfor %}
@@ -87,4 +72,3 @@ $(document).ready(function() {
 
 
 {% endblock %}
-

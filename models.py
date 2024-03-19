@@ -18,43 +18,31 @@ def connect_db(app):
 
 
 class Favorite(db.Model):
-    """Connection of a user <-> favorited_article."""
+    """Association table for favorites."""
 
-    __tablename__ = 'user_favorite'
+    __tablename__ = 'favorites'
 
-    article_being_favorited_id = db.Column(
-        db.Integer,
-        db.ForeignKey('articles.id', ondelete="cascade"),
-        primary_key=True,
-    )
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), primary_key=True)
+    is_favorited = db.Column(db.Boolean, nullable=False, default=False)
 
-    user_favorited_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete="cascade"),
-        primary_key=True,
-    )
+    # Define the relationships
+    user = db.relationship("User", back_populates="favorites")
+    
 
 
 class Likes(db.Model):
-    """Mapping user to liked articles."""
+    """Mapping user to liked comments."""
 
     __tablename__ = 'likes'
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'))
+    comment_id = db.Column(db.Integer, db.ForeignKey('comments.id', ondelete='cascade'))
+    is_liked = db.Column(db.Boolean, nullable=False, default=False)
 
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete='cascade')
-    )
-
-    article_id = db.Column(
-        db.Integer,
-        db.ForeignKey('articles.id', ondelete='cascade')
-    )
-
+   
+    user = db.relationship('User', backref='liked_comments')
 
 
 class User(UserMixin, db.Model):
@@ -69,13 +57,17 @@ class User(UserMixin, db.Model):
     img_url = db.Column(db.String(500), nullable=True, default='default_image_url.jpg')
     is_active = db.Column(db.Boolean(), default=True)
     
+    favorites = db.relationship('Favorite', back_populates='user')
+    likes = db.relationship('Likes', back_populates='user', overlaps="liked_comments")  # Add overlaps parameter
+    
     def set_password(self, password):
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password, password)
 
-    
+
+
 
 class Article(db.Model):
     """Article fetched from an API."""
@@ -96,45 +88,41 @@ class Article(db.Model):
 
     title = db.Column(
         db.Text,
-        nullable=False,
+        nullable=True,
     )
-
+    
+    
+    favorites = db.relationship('Favorite', backref='article')
 
 class Comment(db.Model):
     """An individual comment."""
 
     __tablename__ = 'comments'
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
-
-    text = db.Column(
-        db.String(140),
-        nullable=False,
-    )
-
-    timestamp = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=datetime.utcnow,
-    )
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
-    )
-
-    article_id = db.Column(
-        db.Integer,
-        db.ForeignKey('articles.id', ondelete='CASCADE'),
-        nullable=False
-    )
-
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    text = db.Column(db.String(140), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id', ondelete='CASCADE'), nullable=False)
     author = db.relationship('User', backref=db.backref('comments', lazy=True))
+    likes = db.relationship('Likes', backref='comment', lazy='dynamic')
+    likes_count = db.Column(db.Integer, default=0)
+
+    def liked_by_user(self, user):
+        
+        return Likes.query.filter_by(comment_id=self.id, user_id=user.id, is_liked=True).first() is not None
+
+    def like(self, user):
+        if not self.liked_by_user(user):
+            like = Likes(user_id=user.id)
+            self.likes.append(like)
+            self.likes_count += 1
+
+    def unlike(self, user):
+        like = self.likes.filter_by(user_id=user.id).first()
+        if like:
+            self.likes.remove(like)
+            self.likes_count -= 1
 
 
 def connect_db(app):

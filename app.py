@@ -3,12 +3,12 @@ import requests
 from datetime import datetime
 from flask import Flask, render_template, request, flash, redirect, session, g, url_for, jsonify
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-from flask_sqlalchemy import SQLAlchemy
+
 from flask_migrate import Migrate
-from sqlalchemy.exc import IntegrityError
-from models import User,  Article, Favorite, Comment, db, connect_db
-from forms import LoginForm, CommentForm, UserAddForm, UserEditForm
-from flask_bcrypt import generate_password_hash, check_password_hash, Bcrypt
+
+from models import User,  Article, Favorite, Comment, Likes, db, connect_db
+from forms import LoginForm, UserAddForm, UserEditForm
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -41,6 +41,8 @@ def load_user(user_id):
 
 
 
+
+
 @app.route('/')
 def homepage():
     """Show homepage."""
@@ -49,14 +51,26 @@ def homepage():
         top_articles = get_articles_for_homepage()
 
         for article in top_articles:
+           
+            article['id'] = article['url']
+            article['is_favorited'] = False  
+            if current_user.is_authenticated:
+                favorite = db.session.query(Favorite).join(Article).filter(Favorite.user_id == current_user.id, Article.url == article['url']).first()
+                if favorite:
+                    article['is_favorited'] = True
+                print(f"Article: {article['title']}, Is Favorited: {article['is_favorited']}")
+
             if 'publishedAt' in article:
                 published_at = datetime.fromisoformat(article['publishedAt'][:-1])  # Remove 'Z'
                 article['publishedAt'] = published_at.strftime('%m-%d-%Y')
 
         return render_template('home.html', top_articles=top_articles)
     else:
-        print("Rendering home-anon.html")
+        
         return render_template('home-anon.html')
+    
+ 
+
 
 def get_articles_for_homepage():
     print("Fetching articles for homepage")  # Debug print
@@ -75,6 +89,25 @@ def get_articles_for_homepage():
     else:
         # If the request was unsuccessful, return an empty list
         return []
+
+def get_articles_for_search(query):
+    print(f"Fetching articles for search query: {query}")  # Debug print
+    # Send a GET request to the API endpoint
+    response = requests.get('https://newsapi.org/v2/everything', params={'q': query, 'apiKey': 'e37703955bc344baac883221a3ea44a7'})
+
+    if response.status_code == 200:
+        # Parse the JSON response
+        response_json = response.json()
+        # Extract the list of articles
+        articles = response_json.get('articles', [])
+        return articles
+    else:
+        # If the request was unsuccessful, return an empty list
+        return []
+        
+
+
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -144,98 +177,62 @@ def login():
 
 
 
-@app.route('/logout', methods=['GET'])
+@app.route('/logout')
 @login_required
 def logout():
     """Handle user logout."""
     logout_user()
     flash('You have been logged out.', 'success')
-    return redirect(url_for('login'))
-
+    return redirect(url_for('homepage'))
 ##############################################################################
 # General user routes:
 
-@app.route('/users')
-def list_users():
-    """Page with listing of users.
 
-    Can take a 'q' param in querystring to search by that username.
-    """
 
-    search = request.args.get('q')
+@app.route('/check_and_add_to_favorites', methods=['POST'])
+@login_required
+def check_and_add_to_favorites():
+    article_title = request.form.get('article_title')
+    article_url = request.form.get('article_url')
 
-    if not search:
-        users = User.query.all()
-    else:
-        users = User.query.filter(User.username.like(f"%{search}%")).all()
-
-    return render_template('users/index.html', users=users)
-
-@app.route('/add_to_favorites', methods=['POST'])
-def add_to_favorites():
-    # Get the article ID from the request data
-    article_id = request.form.get('article_id')
-
-    # Check if the article already exists in the database
-    article = Article.query.filter_by(id=article_id).first()
+    article = Article.query.filter_by(url=article_url).first()
 
     if article is None:
-        # If the article doesn't exist, add it to the database
-        article_name = request.form.get('article_name')  # Assuming you send article name in the request
-        article_url = request.form.get('article_url')    # Assuming you send article URL in the request
-
-        # Create a new article object and add it to the database
-        article = Article(name=article_name, url=article_url)
+        # If the article doesn't exist, create it in the database
+        article = Article(title=article_title, url=article_url)
         db.session.add(article)
         db.session.commit()
 
-    # Get the current user's ID
-    user_id = current_user.id
-
-    # Check if the user has already favorited the article
-    existing_favorite = Favorite.query.filter_by(user_id=user_id, article_id=article_id).first()
-
-    if existing_favorite:
-        # If the user has already favorited the article, return a response indicating it's already favorited
-        return jsonify({'success': False, 'message': 'Article already favorited.'}), 400
-
-    # If the article is not already favorited by the user, create a new Favorites object
-    favorite = Favorite(user_id=user_id, article_id=article_id)
-
-    # Add the favorite to the database
+    # Add the article to favorites for the current user
+    favorite = Favorite(user_id=current_user.id, article_id=article.id, is_favorited=True)
     db.session.add(favorite)
     db.session.commit()
 
-    return jsonify({'success': True, 'message': 'Article added to favorites.'})
-
-from flask_login import current_user
+    return jsonify({'success': True})
 
 @app.route('/article/<int:article_id>/comments', methods=['GET', 'POST'])
 @login_required
 def article_comments(article_id):
+    article = Article.query.get(article_id)
+
+    if not article:
+        flash('Article not found.', 'danger')
+        return redirect(url_for('homepage'))  # Redirect to a suitable route or render an error template
+
     if request.method == 'POST':
+        # Handle comment submission
         comment_text = request.form.get('comment_text')
-
-        # Fetch the article based on the provided ID
-        article = Article.query.get(article_id)
-
-        if not article:
-            # If the article doesn't exist, redirect to create_article route
-            return redirect(url_for('create_article'))
-
-        # Create a new comment associated with the article
-        new_comment = Comment(text=comment_text, article_id=article.id, user_id=current_user.id)
+        
+        if not comment_text:
+            flash('Comment text is required.', 'danger')
+            return redirect(url_for('article_comments', article_id=article_id))
+        
+        # Create a new comment instance
+        new_comment = Comment(text=comment_text, article_id=article_id, user_id=current_user.id)
+        
+        # Add the new comment to the database
         db.session.add(new_comment)
         db.session.commit()
-
-        # Redirect to the page that displays comments for the article
-        return redirect(url_for('article_comments', article_id=article.id))
-
-    # Fetch the article and its associated comments based on the ID
-    article = Article.query.get(article_id)
-    if not article:
-        # If the article doesn't exist, redirect to create_article route
-        return redirect(url_for('create_article'))
 
     comments = Comment.query.filter_by(article_id=article.id).all()
 
@@ -245,7 +242,14 @@ def article_comments(article_id):
         user = User.query.get(comment.user_id)
         comment.user_name = user.username
 
+        # Check if the current user has liked this comment
+        like = Likes.query.filter_by(user_id=current_user.id, comment_id=comment.id).first()
+        comment.liked_by_user = like is not None  # Set liked_by_user attribute
+
     return render_template('comments.html', article=article, comments=comments)
+
+
+
 
 @app.route('/create_article', methods=['POST'])
 def create_article():
@@ -265,46 +269,51 @@ def create_article():
     # Redirect the user to the article's page (or any other page as needed)
     return redirect(url_for('article_comments', article_id=article.id))
 
-@app.route('/users/profile', methods=["GET", "POST"])
-def edit_profile():
-    """Update profile for current user."""
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
 
-    user = g.user
-    form = UserEditForm(obj=user)
+@app.route('/like_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def like_comment(comment_id):
+    # Get the comment ID from the URL
+    comment_id = int(comment_id)  # Ensure comment_id is an integer
 
-    if form.validate_on_submit():
-        if User.authenticate(user.username, form.password.data):
-            user.username = form.username.data
-            user.email = form.email.data
-            user.image_url = form.image_url.data or "/static/images/default-pic.png"
-            user.header_image_url = form.header_image_url.data or "/static/images/warbler-hero.jpg"
-            user.bio = form.bio.data
+    # Check if the user has already liked the comment
+    like = Likes.query.filter_by(user_id=current_user.id, comment_id=comment_id).first()
 
-            db.session.commit()
-            return redirect(f"/users/{user.id}")
+    if like:
+        # If the user has already liked the comment, update is_liked to True
+        like.is_liked = True
+    else:
+        # If the user has not liked the comment, create a new like with is_liked set to True
+        new_like = Likes(user_id=current_user.id, comment_id=comment_id, is_liked=True)
+        db.session.add(new_like)
 
-        flash("Wrong password, please try again.", 'danger')
-
-    return render_template('users/edit.html', form=form, user_id=user.id)
-
-@app.route('/users/delete', methods=["POST"])
-def delete_user():
-    """Delete user."""
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
-    do_logout()
-
-    db.session.delete(g.user)
+    # Update the likes count in the comments table
+    comment = Comment.query.get(comment_id)
+    comment.likes_count += 1
     db.session.commit()
 
-    return redirect("/signup")
+    # Return the updated likes count
+    return jsonify({'likes_count': comment.likes_count})
+
+
+  
+
+@app.route('/user/<int:user_id>/favorites')
+def user_favorites(user_id):
+    # Query the database to retrieve the user's favorited articles
+    user_favorites = (Favorite.query
+                      .join(User)
+                      .filter(User.id == user_id)
+                      .all())
+
+    # Extract the articles from the favorites
+    articles = [fav.article for fav in user_favorites]
+    user = User.query.get(user_id)
+    # Render a template to display the user's favorited articles
+    return render_template('user_favorites.html', user=user, articles=articles)
+
+
 
 ##############################################################################
 # Error handling
