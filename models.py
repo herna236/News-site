@@ -108,6 +108,9 @@ class Comment(db.Model):
     likes = db.relationship('Likes', backref='comment', lazy='dynamic')
     likes_count = db.Column(db.Integer, default=0)
 
+
+    
+
     def liked_by_user(self, user):
         
         return Likes.query.filter_by(comment_id=self.id, user_id=user.id, is_liked=True).first() is not None

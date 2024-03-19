@@ -3,12 +3,12 @@ import requests
 from datetime import datetime
 from flask import Flask, render_template, request, flash, redirect, session, g, url_for, jsonify
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-
+from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
+from sqlalchemy.exc import IntegrityError
 from models import User,  Article, Favorite, Comment, Likes, db, connect_db
-from forms import LoginForm, UserAddForm, UserEditForm
-from flask_bcrypt import Bcrypt
+from forms import LoginForm, CommentForm, UserAddForm, UserEditForm
+from flask_bcrypt import generate_password_hash, check_password_hash, Bcrypt
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -66,10 +66,8 @@ def homepage():
 
         return render_template('home.html', top_articles=top_articles)
     else:
-        
+        print("Rendering home-anon.html")
         return render_template('home-anon.html')
-    
- 
 
 
 def get_articles_for_homepage():
@@ -89,23 +87,6 @@ def get_articles_for_homepage():
     else:
         # If the request was unsuccessful, return an empty list
         return []
-
-def get_articles_for_search(query):
-    print(f"Fetching articles for search query: {query}")  # Debug print
-    # Send a GET request to the API endpoint
-    response = requests.get('https://newsapi.org/v2/everything', params={'q': query, 'apiKey': 'e37703955bc344baac883221a3ea44a7'})
-
-    if response.status_code == 200:
-        # Parse the JSON response
-        response_json = response.json()
-        # Extract the list of articles
-        articles = response_json.get('articles', [])
-        return articles
-    else:
-        # If the request was unsuccessful, return an empty list
-        return []
-        
-
 
 
 
@@ -177,17 +158,32 @@ def login():
 
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['GET'])
 @login_required
 def logout():
     """Handle user logout."""
     logout_user()
     flash('You have been logged out.', 'success')
-    return redirect(url_for('homepage'))
+    return redirect(url_for('login'))
+
 ##############################################################################
 # General user routes:
 
+@app.route('/users')
+def list_users():
+    """Page with listing of users.
 
+    Can take a 'q' param in querystring to search by that username.
+    """
+
+    search = request.args.get('q')
+
+    if not search:
+        users = User.query.all()
+    else:
+        users = User.query.filter(User.username.like(f"%{search}%")).all()
+
+    return render_template('users/index.html', users=users)
 
 @app.route('/check_and_add_to_favorites', methods=['POST'])
 @login_required
@@ -313,7 +309,20 @@ def user_favorites(user_id):
     # Render a template to display the user's favorited articles
     return render_template('user_favorites.html', user=user, articles=articles)
 
+@app.route('/users/delete', methods=["POST"])
+def delete_user():
+    """Delete user."""
 
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    do_logout()
+
+    db.session.delete(g.user)
+    db.session.commit()
+
+    return redirect("/signup")
 
 ##############################################################################
 # Error handling
