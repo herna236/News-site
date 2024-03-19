@@ -46,7 +46,7 @@ $(document).ready(function() {
     $('.favorite-button').on('click', function(e) {
         var button = $(this);
         var articleUrl = button.data('article-url');
-        var aticleTitle = butt.data('article-title')
+        var articleTitle = button.data('article-title')
 
         // AJAX request to check if the article exists and add it to favorites
         $.ajax({
@@ -54,7 +54,7 @@ $(document).ready(function() {
             method: 'POST',
             data: {
                 article_url: articleUrl,
-                article_title: articeTitle
+                article_title: articleTitle
             },
             success: function(response) {
                 if (response.success) {
