@@ -1,14 +1,15 @@
 import os
 import requests
 from datetime import datetime
-from flask import Flask, render_template, request, flash, redirect, session, g, url_for, jsonify
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 from models import User,  Article, Favorite, Comment, Likes, db, connect_db
-from forms import LoginForm, CommentForm, UserAddForm, UserEditForm
-from flask_bcrypt import generate_password_hash, check_password_hash, Bcrypt
+from forms import LoginForm, UserAddForm
+from flask_bcrypt import Bcrypt
+from config import API_KEY
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -29,18 +30,6 @@ login_manager = LoginManager(app)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-# Rest of your app...
-
-
-# Rest of your app...
-
-
-##############################################################################
-# User signup/login/logout
-
-
-
 
 
 @app.route('/')
@@ -73,7 +62,7 @@ def homepage():
 def get_articles_for_homepage():
     print("Fetching articles for homepage")  # Debug print
     # Send a GET request to the API endpoint
-    response = requests.get('https://newsapi.org/v2/top-headlines', params={'country': 'us', 'apiKey': 'e37703955bc344baac883221a3ea44a7'})
+    response = requests.get('https://newsapi.org/v2/top-headlines', params={'country': 'us', 'apiKey': API_KEY})
 
     if response.status_code == 200:
         # Parse the JSON response
@@ -166,25 +155,6 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
-##############################################################################
-# General user routes:
-
-@app.route('/users')
-def list_users():
-    """Page with listing of users.
-
-    Can take a 'q' param in querystring to search by that username.
-    """
-
-    search = request.args.get('q')
-
-    if not search:
-        users = User.query.all()
-    else:
-        users = User.query.filter(User.username.like(f"%{search}%")).all()
-
-    return render_template('users/index.html', users=users)
-
 @app.route('/check_and_add_to_favorites', methods=['POST'])
 @login_required
 def check_and_add_to_favorites():
@@ -209,8 +179,8 @@ def check_and_add_to_favorites():
 @app.route('/article/<int:article_id>/comments', methods=['GET', 'POST'])
 @login_required
 def article_comments(article_id):
+    
     article = Article.query.get(article_id)
-
     if not article:
         flash('Article not found.', 'danger')
         return redirect(url_for('homepage'))  # Redirect to a suitable route or render an error template
@@ -313,20 +283,7 @@ def user_favorites(user_id):
     # Render a template to display the user's favorited articles
     return render_template('user_favorites.html', user=user, articles=articles)
 
-@app.route('/users/delete', methods=["POST"])
-def delete_user():
-    """Delete user."""
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
-    do_logout()
-
-    db.session.delete(g.user)
-    db.session.commit()
-
-    return redirect("/signup")
 
 ##############################################################################
 # Error handling
