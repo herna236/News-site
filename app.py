@@ -15,7 +15,7 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 # Set up the secret key and database URI
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///hh')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://krndjncc:a5gxr03jVlcmiGbkRlXfW56vA1k3IZn8@raja.db.elephantsql.com/krndjncc'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
