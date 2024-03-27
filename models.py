@@ -1,11 +1,9 @@
 import os
 from datetime import datetime
-from flask import url_for
-from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from flask_bcrypt import generate_password_hash, check_password_hash
-
+from flask_bcrypt import Bcrypt
 
 
 bcrypt = Bcrypt()
