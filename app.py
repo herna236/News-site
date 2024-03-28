@@ -60,8 +60,7 @@ def homepage():
 
 
 def get_articles_for_homepage():
-    print("Fetching articles for homepage")  # Debug print
-    # Send a GET request to the API endpoint
+    print("Fetching articles for homepage")  
     response = requests.get('https://newsapi.org/v2/top-headlines', params={'country': 'us', 'apiKey': API_KEY})
 
     if response.status_code == 200:
