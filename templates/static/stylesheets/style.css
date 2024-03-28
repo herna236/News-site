@@ -13,7 +13,7 @@ body.error-404 {
 }
 
 .btn {
-  border-radius: 50px;
+  border-radius: 70px;
 }
 
 .btn:hover {
@@ -24,7 +24,7 @@ body.error-404 {
 
 .navbar {
   background-color: #fff;
-  height: 46px;
+  height: 40px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.25);
   margin-bottom: 1rem;
   position: relative;
@@ -32,13 +32,13 @@ body.error-404 {
 }
 
 .navbar a {
-  color: #66757f;
-  font-size: 13px;
+  color: #ffffff;
+  font-size: 15px;
   font-weight: bold;
 }
 
 .navbar a:hover {
-  color: #1c94e0;
+  color: #0c4a6f;
 }
 
 .navbar-brand {
@@ -89,7 +89,7 @@ nav form.navbar-form {
   bottom: 4px;
   z-index: 1;
   padding: 0;
-  color: #66757f;
+  color: #ffffff;
 }
 
 #search.form-control + .btn:active,
@@ -103,10 +103,7 @@ nav form.navbar-form {
   border: 2px solid #007bff;
 }
 
-/* on "onboarding" pages (signup & login), the navbar is
-   different: no search box, the logo is centered, and it has
-   a background color.
- */
+
 
 .onboarding > .navbar {
   background-image: url("/static/images/nav-bg.png");
@@ -143,13 +140,26 @@ nav form.navbar-form {
 }
 
 @media (max-width: 468px) {
+  /* Hide the navigation form */
   nav form.navbar-form {
     display: none;
+    
   }
-}
-
-nav + .container {
-  margin-bottom: 1rem;
+  
+  /* Increase the font size of elements */
+  body {
+    font-size: 25px; /* Adjust the value as needed */
+  }
+  
+  /* Increase the size of other elements as needed */
+  /* For example: */
+  nav {
+    font-size: 30px;
+  }
+  
+  .container {
+    margin-bottom: 1rem; /* Increase margin for better spacing */
+  }
 }
 
 /* ===================== User profile */
@@ -177,7 +187,7 @@ nav + .container {
   margin-top: -120px;
   z-index: 1;
   position: relative;
-  box-shadow: 0 1px 1px rgba(136, 153, 166, 0.15);
+  box-shadow: 0 1px 1px rgba(251, 251, 251, 0.15);
 }
 
 .timeline-image {
@@ -196,13 +206,7 @@ nav + .container {
   margin-left: 10px;
 }
 
-#warbler-hero {
-  height: 360px;
-  margin-top: -16px;
-  opacity: 0.7;
-  background-size: cover;
-  background-position: top center;
-}
+
 
 .full-width {
   width: 100vw;
@@ -291,15 +295,9 @@ nav + .container {
   word-wrap: break-word;
 }
 
-@media (max-width: 768px) {
-  .full-width .user-stats .stat {
-    display: none;
-  }
-}
 
-.user-location {
-  color: #657786;
-}
+
+
 
 /* ==================== User cards on follower/following pages */
 
@@ -541,3 +539,18 @@ p.card-bio {
 .message-404 .form-inline input {
   flex: 1;
 }
+
+
+.centered-column {
+  text-align: center;
+}
+
+.navbar-brand img,
+.navbar-brand span {
+  font-size: 24px; 
+}
+
+
+
+
+
