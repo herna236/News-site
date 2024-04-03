@@ -1,7 +1,7 @@
-/* ====================== General */
+
 
 body {
-  background-color: #e6ecf0;
+  background-color: #a4d4f3;
 }
 
 body.error-404 {
@@ -23,12 +23,13 @@ body.error-404 {
 /* ======================= Nav */
 
 .navbar {
-  background-color: #fff;
-  height: 46px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  background-color: #314451;
+  height: 60px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
   margin-bottom: 1rem;
   position: relative;
   z-index: 9999;
+  border: none;
 }
 
 .navbar a {
@@ -146,8 +147,12 @@ nav form.navbar-form {
   nav form.navbar-form {
     display: none;
   }
+  .navbar {
+   
+    height: 120px;
+    
+  }
 }
-
 nav + .container {
   margin-bottom: 1rem;
 }
