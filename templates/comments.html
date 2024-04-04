@@ -2,9 +2,10 @@
 
 {% block content %}
 <h1><a href="{{ article.url }}">Comments for "{{ article.title }}"</a></h1>
-
+<hr>
 <div>
     <h2>Existing Comments</h2>
+    <hr>
     <ul>
         {% for comment in comments %}
         <div id="comment-{{ comment.id }}" class="comment">

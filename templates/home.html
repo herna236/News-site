@@ -26,20 +26,22 @@
               {% for article in top_articles %}
               <li class="list-group-item">
                   <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
-                  <p>Published At: {{ article.publishedAt }}</p>
+                  <p class="smaller">Published At: {{ article.publishedAt }}</p>
                   
                   <div class="article-actions">
-                    {% if article.is_favorited %}
-                         <button class="btn btn-danger favorite-button" disabled style="font-family: Wingdings;">&#x2665;</button>
-                      {% else %}
-                         <button class="btn btn-danger favorite-button" data-article-id="{{ article.url }}" data-article-title="{{ article.title }}" data-article-url="{{ article.url }}" style="font-family: Wingdings;">&#x2661;</button>
-                      {% endif %}
-
-                    <form action="{{ url_for('create_article') }}" method="post">
-                        <input type="hidden" name="article_title" value="{{ article.title }}">
-                        <input type="hidden" name="article_url" value="{{ article.url }}">
-                        <button type="submit" class="btn btn-primary">Comments</button>
-                    </form>
+                    <div class="d-flex">
+                        {% if article.is_favorited %}
+                            <button class="btn btn-danger favorite-button" disabled style="font-family: Wingdings;">&#x2665;</button>
+                        {% else %}
+                            <button class="btn btn-danger favorite-button" data-article-id="{{ article.url }}" data-article-title="{{ article.title }}" data-article-url="{{ article.url }}" style="font-family: Wingdings;">&#x2661;</button>
+                        {% endif %}
+                
+                        <form action="{{ url_for('create_article') }}" method="post">
+                            <input type="hidden" name="article_title" value="{{ article.title }}">
+                            <input type="hidden" name="article_url" value="{{ article.url }}">
+                            <button type="submit" class="btn btn-primary btn-custom">Comments</button>
+                        </form>
+                    </div>
                 </div>
                 
               </li>
@@ -82,16 +84,6 @@ $(document).ready(function() {
     });
 });
 </script>
-
-<style>
-  /* Override default styles for disabled buttons */
-  .favorite-button:disabled {
-      opacity: 1; /* Set opacity to 1 to make the button fully visible */
-      background-color: #dc3545; /* Change background color */
-      color: #fff; /* Change text color */
-      cursor: not-allowed; /* Change cursor to indicate non-interactivity */
-  }
-  </style>
 
 {% endblock %}
 

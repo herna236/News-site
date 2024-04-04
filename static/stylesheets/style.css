@@ -28,7 +28,7 @@ body.error-404 {
   margin-bottom: 1rem;
   position: relative;
   z-index: 9999;
-  border: none;
+  
 }
 
 .navbar a {
@@ -252,11 +252,7 @@ nav + .container {
   word-wrap: break-word;
 }
 
-@media (max-width: 768px) {
-  .full-width .user-stats .stat {
-    display: none;
-  }
-}
+
 
 .user-location {
   color: #657786;
@@ -517,9 +513,43 @@ p.card-bio {
   .navbar {
    
     height: 120px;
+    font-size: 30px;
     
   }
   .ul {
+    font-size: 40px;
+  }
+  
+  .article-actions{
+    font-size: 50px;
+  }
+ 
+  .col-md-8 {
+    flex: 0 0 auto;
+    width: 95%;
+}
+  .favorite-button{
+    font-size: 40px;
+    margin-right:10px;
+
+    
+  }
+  .btn-custom {
+    
+    font-size: 30px; 
+    padding: 10px 20px; 
+    margin-left: 10px;
+  }
+  .smaller{
+    font-size: 10px;
+  }
+  h2{
+    font-size: 40px;
+  }
+  .container-fluid{
     font-size: 30px;
+  }
+  .col-md-7{
+    width: 95%;
   }
 }
