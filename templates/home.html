@@ -30,10 +30,11 @@
                   
                   <div class="article-actions">
                     {% if article.is_favorited %}
-                    <button class="btn btn-danger favorite-button" disabled>Already Favorited</button>
-                    {% else %}
-                      <button class="btn btn-danger favorite-button" data-article-id="{{ article.url }}" data-article-title="{{ article.title }}" data-article-url="{{ article.url }}">Add to Favorites</button>
-                    {% endif %}
+                         <button class="btn btn-danger favorite-button" disabled style="font-family: Wingdings;">&#x2665;</button>
+                      {% else %}
+                         <button class="btn btn-danger favorite-button" data-article-id="{{ article.url }}" data-article-title="{{ article.title }}" data-article-url="{{ article.url }}" style="font-family: Wingdings;">&#x2661;</button>
+                      {% endif %}
+
                     <form action="{{ url_for('create_article') }}" method="post">
                         <input type="hidden" name="article_title" value="{{ article.title }}">
                         <input type="hidden" name="article_url" value="{{ article.url }}">
@@ -69,7 +70,7 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                    
-                    button.text('Favorited').prop('disabled', true);
+                    button.html('&#x2665;').prop('disabled', true);
                 } else {
                     console.error('Error adding article to favorites:', response.message);
                 }
@@ -82,6 +83,15 @@ $(document).ready(function() {
 });
 </script>
 
+<style>
+  /* Override default styles for disabled buttons */
+  .favorite-button:disabled {
+      opacity: 1; /* Set opacity to 1 to make the button fully visible */
+      background-color: #dc3545; /* Change background color */
+      color: #fff; /* Change text color */
+      cursor: not-allowed; /* Change cursor to indicate non-interactivity */
+  }
+  </style>
 
 {% endblock %}
 

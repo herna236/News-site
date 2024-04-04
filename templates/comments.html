@@ -1,74 +1,80 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1><a href="{{ article.link }}">Comments for "{{ article.title }}"</a></h1>
+<h1><a href="{{ article.url }}">Comments for "{{ article.title }}"</a></h1>
 
-
-   
-    <div>
-        <h2>Existing Comments</h2>
-        <ul>
-            {% for comment in comments %}
-            <div class="comment">
+<div>
+    <h2>Existing Comments</h2>
+    <ul>
+        {% for comment in comments %}
+        <div id="comment-{{ comment.id }}" class="comment">
+            <div style="display: flex; align-items: center;"> <!-- Add flexbox style for alignment -->
                 <h3>{{ comment.text }}</h3>
-                
-                <div style="margin-left: 40px;">
-                    <h4><a href="{{ url_for('user_favorites', user_id=comment.user_id) }}">{{ comment.user_name }}</a> on {{ comment.created_at }}</h4>
-                </div>
-                
-                <button class="btn btn-danger like-btn" data-comment-id="{{ comment.id }}" {% if comment.liked_by_user %}disabled{% endif %}>
+                <button class="btn like-btn" data-comment-id="{{ comment.id }}" data-liked="{% if comment.liked_by_user %}true{% else %}false{% endif %}">
                     {% if comment.liked_by_user %}
-                        Liked
+                        &#x1F44D; <!-- Unicode thumbs-up icon -->
                     {% else %}
-                        Like
+                        &#x1F44D; <!-- Unicode thumbs-down icon -->
                     {% endif %}
-                    <span class="like-count">{{ comment.likes_count }}</span>
+                    <span class="likes-count">{{ comment.likes_count }}</span>
                 </button>
             </div>
-            {% endfor %}
-        </ul>
+            <div>
+                <h4><a href="{{ url_for('user_favorites', user_id=comment.user_id) }}">{{ comment.user_name }}</a> on {{ comment.created_at }}</h4>
+            </div>
+        </div>
+        <hr size="2" color="blue">
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="text-center"> 
+          <h2>Add a Comment</h2>
+          <form action="{{ url_for('article_comments', article_id=article.id) }}" method="POST">
+              <textarea name="comment_text" class="form-control" placeholder="Enter your comment" required></textarea>
+              <button type="submit" class="btn btn-primary mt-3">Submit</button>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
+  
 
-   
-    <div>
-        <h2>Add a Comment</h2>
-        <form action="{{ url_for('article_comments', article_id=article.id) }}" method="POST">
-            <textarea name="comment_text" placeholder="Enter your comment" required></textarea>
-            <button type="submit">Submit</button>
-        </form>
-    </div>
-
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
     $('.like-btn').on('click', function(e) {
         e.preventDefault(); // Prevent the default form submission
         
         var $likeBtn = $(this); // Store a reference to the like button
-        
         var commentId = $likeBtn.data('comment-id');
-        
+        var likesCountSpan = $likeBtn.find('.likes-count'); // Select the like count span within the clicked button
+
         $.ajax({
-            url: '/like_comment/' + commentId, // Include the comment_id in the URL
+            url: '/like_comment_toggle/' + commentId,
             method: 'POST',
             success: function(response) {
-                // You can handle the response here if needed
-                console.log('Like successful');
+                console.log('Response:', response);
                 
-                // Update the like count on the button
-                var likeCountSpan = $likeBtn.find('.like-count');
-                likeCountSpan.text(response.likes_count);
+                // Update the liked status of the button
+                var isLiked = response.is_liked;
+                $likeBtn.data('liked', isLiked);
+
+                // Update the button icon based on the liked status
+                $likeBtn.html(isLiked ? '👍 ' + response.likes_count : '👍' + response.likes_count);
+
+                console.log('Response likes count:', response.likes_count);
                 
-                // Disable the button after liking
-                $likeBtn.prop('disabled', true);
             },
             error: function(xhr, status, error) {
-                console.error('Error liking comment:', error);
+                console.error('Error toggling like:', error);
             }
         });
     });
 });
-    </script>
-    
+</script>
+
 {% endblock %}

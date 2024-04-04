@@ -1,11 +1,10 @@
 
-
 body {
-  background-color: #a4d4f3;
+  background-color: #bbe0f8;
 }
 
 body.error-404 {
-  background-color: #1da1f2;
+  background-color: #bbe0f8
 }
 
 .form-control {
@@ -23,7 +22,7 @@ body.error-404 {
 /* ======================= Nav */
 
 .navbar {
-  background-color: #314451;
+  background-color: #9ed1f3;
   height: 60px;
   border-bottom: 2px solid rgba(0, 0, 0, 0.25);
   margin-bottom: 1rem;
@@ -74,40 +73,7 @@ nav form.navbar-form {
   position: relative;
 }
 
-#search.form-control {
-  border-radius: 20px;
-  margin-bottom: 0;
-  width: 100%;
-  font-size: 13px;
-  padding-right: 28px;
-  box-sizing: border-box;
-}
 
-#search.form-control + .btn {
-  position: absolute;
-  right: 9px;
-  top: 2px;
-  bottom: 4px;
-  z-index: 1;
-  padding: 0;
-  color: #66757f;
-}
-
-#search.form-control + .btn:active,
-#search.form-control + .btn:focus {
-  box-shadow: none;
-}
-
-#search:active,
-#search:focus {
-  box-shadow: none;
-  border: 2px solid #007bff;
-}
-
-/* on "onboarding" pages (signup & login), the navbar is
-   different: no search box, the logo is centered, and it has
-   a background color.
- */
 
 .onboarding > .navbar {
   background-image: url("/static/images/nav-bg.png");
@@ -143,16 +109,6 @@ nav form.navbar-form {
   background-color: #fff;
 }
 
-@media (max-width: 468px) {
-  nav form.navbar-form {
-    display: none;
-  }
-  .navbar {
-   
-    height: 120px;
-    
-  }
-}
 nav + .container {
   margin-bottom: 1rem;
 }
@@ -545,4 +501,25 @@ p.card-bio {
 
 .message-404 .form-inline input {
   flex: 1;
+}
+
+.favorite-button:disabled {
+  opacity: 1; /* Set opacity to 1 to make the button fully visible */
+  background-color: #dc3545; /* Change background color */
+  color: #fff; /* Change text color */
+  cursor: not-allowed; /* Change cursor to indicate non-interactivity */
+}
+
+@media only screen and (max-device-width: 480px) {
+  nav form.navbar-form {
+    display: none;
+  }
+  .navbar {
+   
+    height: 120px;
+    
+  }
+  .ul {
+    font-size: 30px;
+  }
 }

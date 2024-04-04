@@ -89,7 +89,7 @@ def signup():
         username = form.username.data
         password = form.password.data
         email = form.email.data
-        img_url = form.img_url.data
+       
 
         # Check if the username or email already exists in the database
         existing_user = User.query.filter_by(username=username).first()
@@ -103,7 +103,7 @@ def signup():
             flash("Email already exists. Please use a different one.", 'danger')
             return redirect(url_for('signup'))
 
-        new_user = User(username=username, email=email, img_url=img_url)
+        new_user = User(username=username, email=email)
         new_user.set_password(password)
 
         # Add the new user to the database
@@ -209,11 +209,32 @@ def article_comments(article_id):
 
         # Check if the current user has liked this comment
         like = Likes.query.filter_by(user_id=current_user.id, comment_id=comment.id).first()
-        comment.liked_by_user = like is not None  # Set liked_by_user attribute
+        comment.liked_by_user = like is not None  
 
     return render_template('comments.html', article=article, comments=comments)
 
+@app.route('/like_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def like_comment(comment_id):
+        # Retrieve the comment from the database
+        comment = Comment.query.get_or_404(comment_id)
 
+        # Check if the current user has already liked the comment
+        like = Likes.query.filter_by(user_id=current_user.id, comment_id=comment_id).first()
+
+        if like:
+            # If the user has already liked the comment, unlike it
+            db.session.delete(like)
+        else:
+            # If the user has not liked the comment, like it
+            new_like = Likes(user_id=current_user.id, comment_id=comment_id)
+            db.session.add(new_like)
+
+        # Commit the changes to the database
+        db.session.commit()
+
+        # Return a success response
+        return jsonify({'success': True})
 
 
 @app.route('/create_article', methods=['POST'])
@@ -222,10 +243,9 @@ def create_article():
     article_url = request.form.get('article_url')
     article_title = request.form.get('article_title')
 
-    # Log the received article title
-    print("Received article title:", article_title)
+    
 
-    # Filter by the 'url' attribute instead of 'link'
+    
     article = Article.query.filter_by(url=article_url).first()  
 
     if article is None:
@@ -240,30 +260,37 @@ def create_article():
 
 
 
-@app.route('/like_comment/<int:comment_id>', methods=['POST'])
+@app.route('/like_comment_toggle/<int:comment_id>', methods=['POST'])
 @login_required
-def like_comment(comment_id):
-    # Get the comment ID from the URL
-    comment_id = int(comment_id)  # Ensure comment_id is an integer
+def like_comment_toggle(comment_id):
+    # Get the comment from the database
+    comment = Comment.query.get_or_404(comment_id)
 
     # Check if the user has already liked the comment
-    like = Likes.query.filter_by(user_id=current_user.id, comment_id=comment_id).first()
+    existing_like = Likes.query.filter_by(user_id=current_user.id, comment_id=comment_id).first()
 
-    if like:
-        # If the user has already liked the comment, update is_liked to True
-        like.is_liked = True
+    if existing_like:
+        # If the user has already liked the comment, remove their like
+        db.session.delete(existing_like)
+        # Decrement the likes count in the comments table
+        comment.likes_count -= 1
+        is_liked = False
     else:
-        # If the user has not liked the comment, create a new like with is_liked set to True
-        new_like = Likes(user_id=current_user.id, comment_id=comment_id, is_liked=True)
+        # If the user has not liked the comment, add their like
+        new_like = Likes(user_id=current_user.id, comment_id=comment_id)
         db.session.add(new_like)
+        # Increment the likes count in the comments table
+        comment.likes_count += 1
+        is_liked = True
 
-    # Update the likes count in the comments table
-    comment = Comment.query.get(comment_id)
-    comment.likes_count += 1
+    # Commit the changes to the database
     db.session.commit()
 
-    # Return the updated likes count
-    return jsonify({'likes_count': comment.likes_count})
+    # Return the updated likes count and the current liked status
+    return jsonify({'likes_count': comment.likes_count, 'is_liked': is_liked})
+
+
+
 
 
   
