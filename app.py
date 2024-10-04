@@ -60,21 +60,19 @@ def homepage():
 
 
 def get_articles_for_homepage():
-    print("Fetching articles for homepage")  
-    response = requests.get('https://newsapi.org/v2/top-headlines', params={'country': 'us', 'apiKey': API_KEY})
+    try:
+        response = requests.get(
+            'https://newsapi.org/v2/top-headlines', 
+            params={'country': 'us', 'apiKey': API_KEY}
+        )
+        response.raise_for_status()  # Raises an error for bad responses (4xx, 5xx)
+    except requests.RequestException as e:
+        print(f"Error fetching articles: {e}")
+        return []  # Or return an error message
 
-    if response.status_code == 200:
-        # Parse the JSON response
-        response_json = response.json()
-        # Extract the list of articles
-        articles = response_json.get('articles', [])
-        # Extract the first 10 articles
-        first_10_articles = articles[:10]
-
-        return first_10_articles
-    else:
-        # If the request was unsuccessful, return an empty list
-        return []
+    response_json = response.json()
+    articles = response_json.get('articles', [])[:10]
+    return articles
 
 
 
