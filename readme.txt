@@ -1,8 +1,6 @@
 with this app you are able to click on links to newsites and read stories that do not neccisarily have a comment section.
 my app allows users to comment on the articles, like other users comments, and have a list of favorite articles.
 
-The title of my site is arhnews. it is deployed at https://capstone2-y1e6.onrender.com/
-
 I used javaScript to handle the favorite buttons and like buttons.  I chose this becuase it doesnt require a page
 refresh.  the change is reflected on the button and JS and an AJAX request. 
 I chose to use flask_login to handle my user login and authication.  I used this becuase it really streamlines the code and makes
