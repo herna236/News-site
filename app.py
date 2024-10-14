@@ -62,8 +62,12 @@ def homepage():
 def get_articles_for_homepage():
     try:
         response = requests.get(
-            'https://newsapi.org/v2/top-headlines', 
-            params={'country': 'us', 'apiKey': API_KEY}
+            'http://api.mediastack.com/v1/news',
+            params={
+                'access_key': API_KEY,
+                'countries': 'us',  # Use 'countries' parameter for country filtering
+                'limit': 10          # Limit the number of articles
+            }
         )
         response.raise_for_status()  # Raises an error for bad responses (4xx, 5xx)
     except requests.RequestException as e:
@@ -71,7 +75,7 @@ def get_articles_for_homepage():
         return []  # Or return an error message
 
     response_json = response.json()
-    articles = response_json.get('articles', [])[:10]
+    articles = response_json.get('data', [])  # 'data' contains the articles in MediaStack
     return articles
 
 
