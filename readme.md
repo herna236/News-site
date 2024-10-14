@@ -1,6 +1,6 @@
 # **News Comment and Favorites App**
 
-This app allows users to click on links to news sites, read stories, and interact with articles by leaving comments, liking other users' comments, and creating a list of favorite articles. Unfortunately this can only be run on the local server with the API key that is provided.  The company changed their policy and no longer allows the free keys to be used in production.
+This app allows users to click on links to news sites, read stories, and interact with articles by leaving comments, liking other users' comments, and creating a list of favorite articles. Unfortunately this can only be run on the local server with the API key that is provided.  The company changed their policy and no longer allows the free keys to be used in production. I have included a sample .env folder that contains an api key that allows you to see how the app works.  If you have a paid api key you would have to replace the sample api key with your paid api key.
 
 ## **Features**
 
