@@ -48,6 +48,7 @@
               </li>
               {% endfor %}
           </ul>
+           <a href="{{ url_for('homepage', offset=offset+limit, limit=limit) }}" class="btn btn-primary mt-3">Next</a>
         </div>
       </div>
     </div>
