@@ -49,9 +49,17 @@ def homepage():
                     article['is_favorited'] = True
                 print(f"Article: {article['title']}, Is Favorited: {article['is_favorited']}")
 
-            if 'publishedAt' in article:
-                published_at = datetime.fromisoformat(article['publishedAt'][:-1])  # Remove 'Z'
-                article['publishedAt'] = published_at.strftime('%m-%d-%Y')
+            if 'published_at' in article:
+                try:
+                     published_at = datetime.fromisoformat(article['published_at'])
+                     article['published_at'] = published_at.strftime('%m-%d-%Y')
+                except ValueError:
+                    article['published_at'] = "Unknown Date"
+
+            if 'source' in article:
+                article['source'] = article['source']
+            else:
+                article['source'] = "Unknown Source" 
 
         return render_template('home.html', top_articles=top_articles)
     else:
