@@ -26,7 +26,7 @@
               {% for article in top_articles %}
               <li class="list-group-item">
                   <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
-                  <p>{{article.source}} </p>
+                  <p><strong>{{article.source}} </strong> </p>
                   <p class="smaller">Published: {{ article.published_at }}</p>
                   
                   <div class="article-actions">
