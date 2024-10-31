@@ -34,47 +34,60 @@ def load_user(user_id):
 
 @app.route('/')
 def homepage():
-    """Show homepage."""
+    """Show homepage with paginated articles."""
 
     if current_user.is_authenticated:
-        top_articles = get_articles_for_homepage()
+        # Get offset and limit from query parameters, with defaults
+        offset = request.args.get('offset', 0, type=int)
+        limit = request.args.get('limit', 10, type=int)
 
+        # Fetch articles with pagination
+        top_articles = get_articles_for_homepage(offset=offset, limit=limit)
+
+        # Additional article handling
         for article in top_articles:
-           
             article['id'] = article['url']
             article['is_favorited'] = False  
+
             if current_user.is_authenticated:
-                favorite = db.session.query(Favorite).join(Article).filter(Favorite.user_id == current_user.id, Article.url == article['url']).first()
+                favorite = db.session.query(Favorite).join(Article).filter(
+                    Favorite.user_id == current_user.id, Article.url == article['url']
+                ).first()
                 if favorite:
                     article['is_favorited'] = True
                 print(f"Article: {article['title']}, Is Favorited: {article['is_favorited']}")
 
+            # Format published date
             if 'published_at' in article:
                 try:
-                     published_at = datetime.fromisoformat(article['published_at'])
-                     article['published_at'] = published_at.strftime('%m-%d-%Y')
+                    published_at = datetime.fromisoformat(article['published_at'])
+                    article['published_at'] = published_at.strftime('%m-%d-%Y')
                 except ValueError:
                     article['published_at'] = "Unknown Date"
 
+            # Handle missing source
             if 'source' in article:
                 article['source'] = article['source']
             else:
-                article['source'] = "Unknown Source" 
+                article['source'] = "Unknown Source"
 
-        return render_template('home.html', top_articles=top_articles)
+        # Render homepage with articles and current offset for pagination
+        return render_template('home.html', top_articles=top_articles, offset=offset, limit=limit)
     else:
         print("Rendering home-anon.html")
         return render_template('home-anon.html')
 
 
-def get_articles_for_homepage():
+def get_articles_for_homepage(offset=0, limit=10):
+    """Fetch articles with pagination parameters."""
     try:
         response = requests.get(
             'http://api.mediastack.com/v1/news',
             params={
                 'access_key': API_KEY,
-                'countries': 'us',  # Use 'countries' parameter for country filtering
-                'limit': 10          # Limit the number of articles
+                'countries': 'us',  
+                'limit': limit,
+                'offset': offset,
             }
         )
         response.raise_for_status()  # Raises an error for bad responses (4xx, 5xx)
@@ -85,6 +98,7 @@ def get_articles_for_homepage():
     response_json = response.json()
     articles = response_json.get('data', [])  # 'data' contains the articles in MediaStack
     return articles
+
 
 
 
